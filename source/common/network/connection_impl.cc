@@ -613,7 +613,7 @@ ConnectionImpl::unixSocketPeerCredentials() const {
 }
 
 void ConnectionImpl::onWriteReady() {
-  ENVOY_CONN_LOG(trace, "write ready", *this);
+  ENVOY_CONN_LOG(trace, "anjana write ready", *this);
 
   if (connecting_) {
     int error;
