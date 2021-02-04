@@ -734,6 +734,16 @@ enum GoAwayErrorCode ngHttp2ErrorCodeToErrorCode(uint32_t code) noexcept {
 Status ConnectionImpl::onFrameReceived(const nghttp2_frame* frame) {
   ENVOY_CONN_LOG(trace, "recv frame type={}", connection_, static_cast<uint64_t>(frame->hd.type));
 
+  if (connection_.remoteAddress() != nullptr) {
+     ENVOY_CONN_LOG(info, "Http::ConnectionImpl::onFrameReceived -> Remote Address {}", connection_,
+                     connection_.remoteAddress()->asString());
+  }
+  if (connection_.localAddress() != nullptr) {
+     ENVOY_CONN_LOG(info, "ConnectionImpl::onFrameReceived -> local Address {}", connection_,
+                     connection_.localAddress()->asString());
+  }
+
+
   // onFrameReceived() is called with a complete HEADERS frame assembled from all the HEADERS
   // and CONTINUATION frames, but we track them separately: HEADERS frames in onBeginHeaders()
   // and CONTINUATION frames in onBeforeFrameReceived().
@@ -939,6 +949,16 @@ Status ConnectionImpl::addOutboundFrameFragment(Buffer::OwnedImpl& output, const
 
 StatusOr<ssize_t> ConnectionImpl::onSend(const uint8_t* data, size_t length) {
   ENVOY_CONN_LOG(trace, "send data: bytes={}", connection_, length);
+
+  if (connection_.remoteAddress() != nullptr) {
+     ENVOY_CONN_LOG(info, "Http::ConnectionImpl::onSend -> Remote Address {}", connection_,
+                     connection_.remoteAddress()->asString());
+  }
+  if (connection_.localAddress() != nullptr) {
+     ENVOY_CONN_LOG(info, "Http::ConnectionImpl::onSend -> local Address {}", connection_,
+                     connection_.localAddress()->asString());
+  }
+  
   Buffer::OwnedImpl buffer;
   auto status = addOutboundFrameFragment(buffer, data, length);
   if (!status.ok()) {

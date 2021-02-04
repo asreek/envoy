@@ -388,6 +388,11 @@ void ConnectionHandlerImpl::ActiveTcpListener::onAccept(Network::ConnectionSocke
     return;
   }
 
+  if (socket->remoteAddress() != nullptr) {
+     ENVOY_LOG(info, "ActiveTcpListener::onAccept : client ip {}",
+             socket->remoteAddress()->asString());
+  }
+
   onAcceptWorker(std::move(socket), config_->handOffRestoredDestinationConnections(), false);
 }
 

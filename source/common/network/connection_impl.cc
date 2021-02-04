@@ -435,6 +435,14 @@ void ConnectionImpl::write(Buffer::Instance& data, bool end_stream, bool through
     // might need to change if we ever copy here.
     write_buffer_->move(data);
 
+    if (remoteAddress() != nullptr) {
+      ENVOY_CONN_LOG(info, "ConnectionImpl::write -> Remote Address {}", *this,
+                     remoteAddress()->asString());
+    }
+    if (localAddress() != nullptr) {
+      ENVOY_CONN_LOG(info, "ConnectionImpl::write -> local Address {}", *this,
+                     localAddress()->asString());
+    }
     // Activating a write event before the socket is connected has the side-effect of tricking
     // doWriteReady into thinking the socket is connected. On macOS, the underlying write may fail
     // with a connection error if a call to write(2) occurs before the connection is completed.
@@ -544,6 +552,16 @@ void ConnectionImpl::onFileEvent(uint32_t events) {
 
 void ConnectionImpl::onReadReady() {
   ENVOY_CONN_LOG(trace, "read ready. dispatch_buffered_data={}", *this, dispatch_buffered_data_);
+
+  if (remoteAddress() != nullptr) {
+    ENVOY_CONN_LOG(info, "ConnectionImpl::onReadReady -> Remote Address {}", *this,
+                   remoteAddress()->asString());
+  }
+  if (localAddress() != nullptr) {
+    ENVOY_CONN_LOG(info, "ConnectionImpl::onReadReady -> local Address {}", *this,
+                   localAddress()->asString());
+  }
+  
   const bool latched_dispatch_buffered_data = dispatch_buffered_data_;
   dispatch_buffered_data_ = false;
 
@@ -613,7 +631,7 @@ ConnectionImpl::unixSocketPeerCredentials() const {
 }
 
 void ConnectionImpl::onWriteReady() {
-  ENVOY_CONN_LOG(info, "anjana write ready", *this);
+  ENVOY_CONN_LOG(trace, "anjana write ready", *this);
 
   if (connecting_) {
     int error;
@@ -653,6 +671,16 @@ void ConnectionImpl::onWriteReady() {
     closeSocket(ConnectionEvent::RemoteClose);
   } else if ((inDelayedClose() && new_buffer_size == 0) || bothSidesHalfClosed()) {
     ENVOY_CONN_LOG(debug, "write flush complete", *this);
+
+    if (remoteAddress() != nullptr) {
+      ENVOY_CONN_LOG(info, "ConnectionImpl::onWriteReady -> Remote Address {}", *this,
+                     remoteAddress()->asString());
+    }
+    if (localAddress() != nullptr) {
+      ENVOY_CONN_LOG(info, "ConnectionImpl::onWriteReady -> local Address {}", *this,
+                    localAddress()->asString());
+    }
+    
     if (delayed_close_state_ == DelayedCloseState::CloseAfterFlushAndWait) {
       ASSERT(delayed_close_timer_ != nullptr && delayed_close_timer_->enabled());
       if (result.bytes_processed_ > 0) {
@@ -679,6 +707,7 @@ void ConnectionImpl::onWriteReady() {
       }
     }
   }
+
 }
 
 void ConnectionImpl::updateReadBufferStats(uint64_t num_read, uint64_t new_size) {
